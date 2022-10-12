@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -97,15 +96,15 @@ func parseInput() {
 		}
 
 		//Convert string to int64, return error if the int is larger than 32bit or not a number
-		val, err := strconv.ParseInt(input, 10, 64)
+		/*val, err := strconv.ParseInt(input, 10, 64)
 		if err != nil {
 			continue
-		}
-		GetTheTime(val)
+		}*/
+		GetTheTime(input)
 	}
 }
 
-func GetTheTime(val int64) {
+func GetTheTime(val string) {
 	//create amount type
 	request := &gRPC.Request{
 		ClientName: *clientsName,
