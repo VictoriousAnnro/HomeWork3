@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-/*To run server, open 2 terminals and use these commands:
+/*To run server, go to gRPCServ folder, open 2 terminals and use these commands:
 go run .\server\server.go
 go run .\client\client.go
 - In separate terminals! And order is important!*/
@@ -25,7 +25,7 @@ go run .\client\client.go
 var clientsName = flag.String("name", "default", "Senders name")
 var serverPort = flag.String("server", "5400", "Tcp server")
 
-var server gRPC.GetTimeClient   //the server
+var server gRPC.PublishClient   //the server
 var ServerConn *grpc.ClientConn //the server connection
 
 func main() {
@@ -69,14 +69,14 @@ func ConnectToServer() {
 
 	// makes a client from the server connection and saves the connection
 	// and prints rather or not the connection was is READY
-	server = gRPC.NewGetTimeClient(conn)
+	server = gRPC.NewPublishClient(conn)
 	ServerConn = conn
 	log.Println("the connection is: ", conn.GetState().String())
 }
 
 func parseInput() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Type 0 to get the current time")
+	fmt.Println("Type 0 to get the current time") //type your message. Press 'Enter' to publish
 	fmt.Println("--------------------")
 
 	//Infinite loop to listen for clients input.
@@ -104,24 +104,24 @@ func parseInput() {
 	}
 }
 
-func GetTheTime(val string) {
-	//create amount type
+func GetTheTime(input string) {
+	//create request type
 	request := &gRPC.Request{
-		ClientName: *clientsName,
-		Value:      val, //cast from int to int32
+		ClientName:  *clientsName,
+		ClientInput: input,
 	}
 
-	//Make gRPC call to server with amount, and recieve acknowlegdement back.
-	ack, err := server.GetTime(context.Background(), request)
+	//Make gRPC call to server with input, and recieve acknowlegdement back.
+	ack, err := server.PublishMessage(context.Background(), request)
 	if err != nil {
 		log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 		log.Println(err)
 	}
 
-	fmt.Print("Success, the time is: ", ack.Timestring)
+	fmt.Print("Success, you have published the message: ", ack.PublishString, "\n")
 }
 
 // Function which returns a true boolean if the connection to the server is ready, and false if it's not.
-func conReady(s gRPC.GetTimeClient) bool {
+func conReady(s gRPC.PublishClient) bool {
 	return ServerConn.GetState().String() == "READY"
 }

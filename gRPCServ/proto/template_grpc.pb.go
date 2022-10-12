@@ -14,88 +14,88 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// GetTimeClient is the client API for GetTime service.
+// PublishClient is the client API for Publish service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GetTimeClient interface {
+type PublishClient interface {
 	// one message is sent and one is recieved
-	GetTime(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Ack, error)
+	PublishMessage(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Ack, error)
 }
 
-type getTimeClient struct {
+type publishClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGetTimeClient(cc grpc.ClientConnInterface) GetTimeClient {
-	return &getTimeClient{cc}
+func NewPublishClient(cc grpc.ClientConnInterface) PublishClient {
+	return &publishClient{cc}
 }
 
-func (c *getTimeClient) GetTime(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Ack, error) {
+func (c *publishClient) PublishMessage(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Ack, error) {
 	out := new(Ack)
-	err := c.cc.Invoke(ctx, "/proto.getTime/GetTime", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.publish/PublishMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GetTimeServer is the server API for GetTime service.
-// All implementations must embed UnimplementedGetTimeServer
+// PublishServer is the server API for Publish service.
+// All implementations must embed UnimplementedPublishServer
 // for forward compatibility
-type GetTimeServer interface {
+type PublishServer interface {
 	// one message is sent and one is recieved
-	GetTime(context.Context, *Request) (*Ack, error)
-	mustEmbedUnimplementedGetTimeServer()
+	PublishMessage(context.Context, *Request) (*Ack, error)
+	mustEmbedUnimplementedPublishServer()
 }
 
-// UnimplementedGetTimeServer must be embedded to have forward compatible implementations.
-type UnimplementedGetTimeServer struct {
+// UnimplementedPublishServer must be embedded to have forward compatible implementations.
+type UnimplementedPublishServer struct {
 }
 
-func (UnimplementedGetTimeServer) GetTime(context.Context, *Request) (*Ack, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTime not implemented")
+func (UnimplementedPublishServer) PublishMessage(context.Context, *Request) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PublishMessage not implemented")
 }
-func (UnimplementedGetTimeServer) mustEmbedUnimplementedGetTimeServer() {}
+func (UnimplementedPublishServer) mustEmbedUnimplementedPublishServer() {}
 
-// UnsafeGetTimeServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GetTimeServer will
+// UnsafePublishServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to PublishServer will
 // result in compilation errors.
-type UnsafeGetTimeServer interface {
-	mustEmbedUnimplementedGetTimeServer()
+type UnsafePublishServer interface {
+	mustEmbedUnimplementedPublishServer()
 }
 
-func RegisterGetTimeServer(s grpc.ServiceRegistrar, srv GetTimeServer) {
-	s.RegisterService(&GetTime_ServiceDesc, srv)
+func RegisterPublishServer(s grpc.ServiceRegistrar, srv PublishServer) {
+	s.RegisterService(&Publish_ServiceDesc, srv)
 }
 
-func _GetTime_GetTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Publish_PublishMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GetTimeServer).GetTime(ctx, in)
+		return srv.(PublishServer).PublishMessage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.getTime/GetTime",
+		FullMethod: "/proto.publish/PublishMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GetTimeServer).GetTime(ctx, req.(*Request))
+		return srv.(PublishServer).PublishMessage(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// GetTime_ServiceDesc is the grpc.ServiceDesc for GetTime service.
+// Publish_ServiceDesc is the grpc.ServiceDesc for Publish service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var GetTime_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.getTime",
-	HandlerType: (*GetTimeServer)(nil),
+var Publish_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.publish",
+	HandlerType: (*PublishServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetTime",
-			Handler:    _GetTime_GetTime_Handler,
+			MethodName: "PublishMessage",
+			Handler:    _Publish_PublishMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

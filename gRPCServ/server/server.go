@@ -17,12 +17,13 @@ import (
 )
 
 type Server struct {
-	gRPC.UnimplementedGetTimeServer        // You need this line if you have a server
+	gRPC.UnimplementedPublishServer        // You need this line if you have a server
 	name                            string // Not required but useful if you want to name your server
 	port                            string // Not required but useful if your server needs to know what port it's listening to
 
-	currentTime time.Time
-	mutex       sync.Mutex // used to lock the server to avoid race conditions.
+	//currentTime time.Time
+	pubMessage string
+	mutex      sync.Mutex // used to lock the server to avoid race conditions.
 }
 
 // flags are used to get arguments from the terminal. Flags take a value, a default value and a description of the flag.
@@ -69,7 +70,7 @@ func launchServer() {
 		//incrementValue: 0, // gives default value, but not sure if it is necessary
 	}
 
-	gRPC.RegisterGetTimeServer(grpcServer, server) //Registers the server to the gRPC server.
+	gRPC.RegisterPublishServer(grpcServer, server) //Registers the server to the gRPC server.
 
 	log.Printf("Server %s: Listening on port %s\n", *serverName, *port)
 
@@ -79,12 +80,11 @@ func launchServer() {
 	// code here is unreachable because grpcServer.Serve occupies the current thread.
 }
 
-func (s *Server) GetTime(ctx context.Context, Request *gRPC.Request) (*gRPC.Ack, error) {
-	s.currentTime = time.Now()
-	//timeString := s.currentTime.String()
+func (s *Server) PublishMessage(ctx context.Context, Request *gRPC.Request) (*gRPC.Ack, error) {
+	//s.currentTime = time.Now()
+	fmt.Print(Request.ClientInput)
+	s.pubMessage = Request.ClientInput
 
 	//ack :=  // make an instance of your return type
-	return &gRPC.Ack{Timestring: s.currentTime.String()}, nil
-
-	//check NewValue i kode og ret. Should work?
+	return &gRPC.Ack{PublishString: s.pubMessage}, nil
 }
