@@ -11,7 +11,7 @@ import (
 
 	// this has to be the same as the go.mod module,
 	// followed by the path to the folder the proto file is in.
-	gRPC "github.com/VictoriousAnnro/gRPCServ/proto"
+	gRPC "github.com/VictoriousAnnro/HomeWork3/gRPCServ/proto"
 
 	"google.golang.org/grpc"
 )

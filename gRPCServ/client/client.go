@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	gRPC "github.com/VictoriousAnnro/gRPCServ/proto"
+	gRPC "github.com/VictoriousAnnro/HomeWork3/gRPCServ/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"

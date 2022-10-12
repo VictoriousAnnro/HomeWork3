@@ -1,4 +1,4 @@
-module github.com/VictoriousAnnro/gRPCServ
+module github.com/VictoriousAnnro/HomeWork3/gRPCServ
 
 go 1.19
 
