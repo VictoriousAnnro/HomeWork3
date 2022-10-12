@@ -67,7 +67,7 @@ type UnsafeGetTimeServer interface {
 func RegisterGetTimeServer(s grpc.ServiceRegistrar, srv GetTimeServer) {
 	s.RegisterService(&GetTime_ServiceDesc, srv)
 }
-
+//
 func _GetTime_GetTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Request)
 	if err := dec(in); err != nil {
