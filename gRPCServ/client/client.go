@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	gRPC "github.com/VictoriousAnnro/HomeWork3/tree/EikMain2/gRPCServ/proto"
@@ -88,7 +87,6 @@ func parseInput() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		input = strings.TrimSpace(input) //Trim input
 
 		if !conReady(server) {
 			log.Printf("Client %s: something was wrong with the connection to the server :(", *clientsName)
