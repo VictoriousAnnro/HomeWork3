@@ -81,6 +81,7 @@ func launchServer() {
 
 func (s *Server) GetTime(ctx context.Context, Request *gRPC.Request) (*gRPC.Ack, error) {
 	s.currentTime = time.Now()
+	fmt.Println("Client Requested Time")
 	//timeString := s.currentTime.String()
 
 	//ack :=  // make an instance of your return type
