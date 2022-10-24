@@ -25,15 +25,6 @@ type Server struct {
 	mutex       sync.Mutex // used to lock the server to avoid race conditions.
 }
 
-type Server2 struct {
-	gRPC.UnimplementedSendMessageServer        // You need this line if you have a server
-	name                                string // Not required but useful if you want to name your server
-	port                                string // Not required but useful if your server needs to know what port it's listening to
-
-	currentTime time.Time
-	mutex       sync.Mutex // used to lock the server to avoid race conditions.
-}
-
 // flags are used to get arguments from the terminal. Flags take a value, a default value and a description of the flag.
 // to use a flag then just add it as an argument when running the program.
 var serverName = flag.String("name", "default", "Senders name") // set with "-name <name>" in terminal
