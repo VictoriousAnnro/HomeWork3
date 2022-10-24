@@ -37,6 +37,6 @@ message Test {
 service sendMessage
 {
     //one message is sent and one is recieved
-    rpc sendMessage (Test) returns (Test);
+    rpc SendMessage (Test) returns (Test);
 }
 

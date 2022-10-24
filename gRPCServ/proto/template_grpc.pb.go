@@ -120,7 +120,7 @@ func NewSendMessageClient(cc grpc.ClientConnInterface) SendMessageClient {
 
 func (c *sendMessageClient) SendMessage(ctx context.Context, in *Test, opts ...grpc.CallOption) (*Test, error) {
 	out := new(Test)
-	err := c.cc.Invoke(ctx, "/proto.sendMessage/sendMessage", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/proto.sendMessage/SendMessage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func _SendMessage_SendMessage_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.sendMessage/sendMessage",
+		FullMethod: "/proto.sendMessage/SendMessage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SendMessageServer).SendMessage(ctx, req.(*Test))
@@ -182,7 +182,7 @@ var SendMessage_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SendMessageServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "sendMessage",
+			MethodName: "SendMessage",
 			Handler:    _SendMessage_SendMessage_Handler,
 		},
 	},

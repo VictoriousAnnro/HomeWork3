@@ -105,7 +105,8 @@ func (s *Server) SendMessage(ctx context.Context, Test *gRPC.Test) (*gRPC.Test, 
 	//timeString := s.currentTime.String()
 
 	//ack :=  // make an instance of your return type
-	return &gRPC.Test{MessageString: "Omg u so stupid haha"}, nil
+	Bleb := &gRPC.Test{MessageString: "Omg u so stupid haha"}
+	return Bleb, nil
 
 	//check NewValue i kode og ret. Should work?
 }
