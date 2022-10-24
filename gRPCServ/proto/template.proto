@@ -12,6 +12,8 @@ package proto;
 // you can call it whatever you want
 service publish
 {
+    //request to join is sent, a stream of messages is recieved in return
+    rpc JoinServer (Request) returns (stream Mess);
     //one message is sent and one is recieved
     rpc PublishMessage (Request) returns (Ack);
 
@@ -25,5 +27,9 @@ message Request {
 
 //timestring or whatever value is here must be set! just set it to 1 as done here
 message Ack {
-    string publishString = 1;
+    string ackMessage = 1;
+}
+
+message Mess {
+    string message = 1;
 }

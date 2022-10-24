@@ -18,6 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PublishClient interface {
+	// request to join is sent, a stream of messages is recieved in return
+	JoinServer(ctx context.Context, in *Request, opts ...grpc.CallOption) (Publish_JoinServerClient, error)
 	// one message is sent and one is recieved
 	PublishMessage(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Ack, error)
 }
@@ -28,6 +30,38 @@ type publishClient struct {
 
 func NewPublishClient(cc grpc.ClientConnInterface) PublishClient {
 	return &publishClient{cc}
+}
+
+func (c *publishClient) JoinServer(ctx context.Context, in *Request, opts ...grpc.CallOption) (Publish_JoinServerClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Publish_ServiceDesc.Streams[0], "/proto.publish/JoinServer", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &publishJoinServerClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Publish_JoinServerClient interface {
+	Recv() (*Mess, error)
+	grpc.ClientStream
+}
+
+type publishJoinServerClient struct {
+	grpc.ClientStream
+}
+
+func (x *publishJoinServerClient) Recv() (*Mess, error) {
+	m := new(Mess)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func (c *publishClient) PublishMessage(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Ack, error) {
@@ -43,6 +77,8 @@ func (c *publishClient) PublishMessage(ctx context.Context, in *Request, opts ..
 // All implementations must embed UnimplementedPublishServer
 // for forward compatibility
 type PublishServer interface {
+	// request to join is sent, a stream of messages is recieved in return
+	JoinServer(*Request, Publish_JoinServerServer) error
 	// one message is sent and one is recieved
 	PublishMessage(context.Context, *Request) (*Ack, error)
 	mustEmbedUnimplementedPublishServer()
@@ -52,6 +88,9 @@ type PublishServer interface {
 type UnimplementedPublishServer struct {
 }
 
+func (UnimplementedPublishServer) JoinServer(*Request, Publish_JoinServerServer) error {
+	return status.Errorf(codes.Unimplemented, "method JoinServer not implemented")
+}
 func (UnimplementedPublishServer) PublishMessage(context.Context, *Request) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishMessage not implemented")
 }
@@ -66,6 +105,27 @@ type UnsafePublishServer interface {
 
 func RegisterPublishServer(s grpc.ServiceRegistrar, srv PublishServer) {
 	s.RegisterService(&Publish_ServiceDesc, srv)
+}
+
+func _Publish_JoinServer_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Request)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(PublishServer).JoinServer(m, &publishJoinServerServer{stream})
+}
+
+type Publish_JoinServerServer interface {
+	Send(*Mess) error
+	grpc.ServerStream
+}
+
+type publishJoinServerServer struct {
+	grpc.ServerStream
+}
+
+func (x *publishJoinServerServer) Send(m *Mess) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _Publish_PublishMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -98,6 +158,12 @@ var Publish_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Publish_PublishMessage_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "JoinServer",
+			Handler:       _Publish_JoinServer_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "proto/template.proto",
 }

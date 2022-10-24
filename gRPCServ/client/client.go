@@ -27,6 +27,7 @@ var serverPort = flag.String("server", "5400", "Tcp server")
 
 var server gRPC.PublishClient   //the server
 var ServerConn *grpc.ClientConn //the server connection
+var stream gRPC.Publish_JoinServerClient
 
 func main() {
 	//parse flag/arguments
@@ -72,15 +73,48 @@ func ConnectToServer() {
 	server = gRPC.NewPublishClient(conn)
 	ServerConn = conn
 	log.Println("the connection is: ", conn.GetState().String())
+
+	request := &gRPC.Request{
+		ClientName:  *clientsName,
+		ClientInput: "",
+	}
+	stream, _ = server.JoinServer(context.Background(), request) //- save stream and launch goroutine
+
 }
 
 func parseInput() {
+	go func() {
+		for {
+			defer resp, err := stream.Recv()
+
+			if err != nil {
+				continue
+			}
+
+			fmt.Print(resp)
+			//tjek om respons ik er nul?
+		}
+	}()
+
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Type 0 to get the current time") //type your message. Press 'Enter' to publish
+	fmt.Println("type your message. Press 'Enter' to publish")
 	fmt.Println("--------------------")
 
 	//Infinite loop to listen for clients input.
 	for {
+		go func() {
+			for {
+				resp, err := stream.Recv()
+				fmt.Printf("stream: %v\n", stream)
+
+				/*if err != nil {
+					continue
+				}
+				fmt.Print("response:", resp)*/
+				//tjek om respons ik er nul?
+			}
+		}()
+
 		fmt.Print("-> ")
 
 		//Read input into var input and any errors into err
@@ -95,11 +129,6 @@ func parseInput() {
 			continue
 		}
 
-		//Convert string to int64, return error if the int is larger than 32bit or not a number
-		/*val, err := strconv.ParseInt(input, 10, 64)
-		if err != nil {
-			continue
-		}*/
 		GetTheTime(input)
 	}
 }
@@ -117,8 +146,8 @@ func GetTheTime(input string) {
 		log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 		log.Println(err)
 	}
-
-	fmt.Print("Success, you have published the message: ", ack.PublishString, "\n")
+	//fmt.Print(ack)
+	fmt.Print("Success, acknowledgement has been received: ", ack.AckMessage, "\n")
 }
 
 // Function which returns a true boolean if the connection to the server is ready, and false if it's not.
