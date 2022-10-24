@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -26,7 +25,7 @@ go run .\client\client.go
 var clientsName = flag.String("name", "default", "Senders name")
 var serverPort = flag.String("server", "5400", "Tcp server")
 
-var server gRPC.sendMessageClient //the server
+var server gRPC.SendMessageClient //the server
 var ServerConn *grpc.ClientConn   //the server connection
 
 func main() {
@@ -97,32 +96,28 @@ func parseInput() {
 		}
 
 		//Convert string to int64, return error if the int is larger than 32bit or not a number
-		val, err := strconv.ParseInt(input, 10, 64)
-		if err != nil {
-			continue
-		}
-		GetTheTime(val)
+		Message(input)
 	}
 }
 
-func GetTheTime(val int64) {
+func Message(val string) {
 	//create amount type
 
 	message := &gRPC.Test{
-		messageString: val,
+		MessageString: val,
 	}
 
 	//Make gRPC call to server with amount, and recieve acknowlegdement back.
-	ack, err := server.SendMessage(context.Background(), message)
+	Test, err := server.SendMessage(context.Background(), message)
 	if err != nil {
 		log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 		log.Println(err)
 	}
 
-	fmt.Print("Success, the time is: ", ack.Timestring)
+	fmt.Print("Success, the time is: ", Test.MessageString)
 }
 
 // Function which returns a true boolean if the connection to the server is ready, and false if it's not.
-func conReady(s gRPC.GetTimeClient) bool {
+func conReady(s gRPC.SendMessageClient) bool {
 	return ServerConn.GetState().String() == "READY"
 }
