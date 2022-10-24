@@ -88,24 +88,14 @@ func launchServer() {
 	// code here is unreachable because grpcServer.Serve occupies the current thread.
 }
 
-func (s *Server) GetTime(ctx context.Context, Request *gRPC.Request) (*gRPC.Ack, error) {
-	s.currentTime = time.Now()
-	fmt.Println("Client Requested Time")
-	//timeString := s.currentTime.String()
-
-	//ack :=  // make an instance of your return type
-	return &gRPC.Ack{Timestring: s.currentTime.String()}, nil
-
-	//check NewValue i kode og ret. Should work?
-}
-
 func (s *Server) SendMessage(ctx context.Context, Test *gRPC.Test) (*gRPC.Test, error) {
 	s.currentTime = time.Now()
-	fmt.Println("Client Requested Time")
+	fmt.Println(ctx)
+	fmt.Println("Client Sent Message")
 	//timeString := s.currentTime.String()
 
 	//ack :=  // make an instance of your return type
-	Bleb := &gRPC.Test{MessageString: "Omg u so stupid haha"}
+	Bleb := &gRPC.Test{MessageString: Test.MessageString}
 	return Bleb, nil
 
 	//check NewValue i kode og ret. Should work?
