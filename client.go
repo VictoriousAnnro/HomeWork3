@@ -38,9 +38,12 @@ func main() {
 		log.Fatalf("Failed to call ChatService :: %v", err)
 
 	}
-	if stream != nil {
 
-	}
+	ch := clienthandle{stream: stream}
+	ch.clientConfig()
+	go ch.sendMessage()
+	go ch.receiveMessage()
+
 	bl := make(chan bool)
 	<-bl
 
@@ -70,7 +73,7 @@ func (ch *clienthandle) sendMessage() {
 		if err != nil {
 			log.Fatalf(" Failed to read from console :: %v", err)
 		}
-		ch.clientName = strings.Trim(clientMessage, "\r\n")
+		clientMessage = strings.Trim(clientMessage, "\r\n")
 
 		clientMessageBox := &Videobranch.FromClient{
 			Name: ch.clientName,
@@ -94,8 +97,8 @@ func (ch *clienthandle) receiveMessage() {
 		if err != nil {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
-
-		fmt.Print("%s : %s \n", mssg.Name, mssg.Body)
+		fmt.Println("1")
+		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
 
 	}
 

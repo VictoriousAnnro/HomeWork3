@@ -63,42 +63,46 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, e
 }
 
 func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_ chan error) {
+
 	for {
-		time.Sleep(500 * time.Millisecond)
+		for {
 
-		messageHandleObject.mu.Lock()
+			time.Sleep(500 * time.Millisecond)
 
-		if len(messageHandleObject.MQue) == 0 {
-			messageHandleObject.mu.Unlock()
-			break
-		}
-
-		senderUniqueCode := messageHandleObject.MQue[0].ClientUniqueCode
-		senderName4Client := messageHandleObject.MQue[0].ClientName
-		message4Client := messageHandleObject.MQue[0].MessageBody
-
-		messageHandleObject.mu.Unlock()
-
-		if senderUniqueCode != clientUniqueCode_ {
-			err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
-
-			if err != nil {
-				errch_ <- err
-			}
 			messageHandleObject.mu.Lock()
 
-			if len(messageHandleObject.MQue) > 1 {
-				messageHandleObject.MQue = messageHandleObject.MQue[1:]
-			} else {
-				messageHandleObject.MQue = []messageUnit{}
+			if len(messageHandleObject.MQue) == 0 {
+				messageHandleObject.mu.Unlock()
+				break
+			}
+
+			senderUniqueCode := messageHandleObject.MQue[0].ClientUniqueCode
+			senderName4Client := messageHandleObject.MQue[0].ClientName
+			message4Client := messageHandleObject.MQue[0].MessageBody
+
+			messageHandleObject.mu.Unlock()
+			if senderUniqueCode != clientUniqueCode_ {
+
+				err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
+
+				if err != nil {
+					errch_ <- err
+				}
+
+				messageHandleObject.mu.Lock()
+
+				if len(messageHandleObject.MQue) > 1 {
+					messageHandleObject.MQue = messageHandleObject.MQue[1:]
+				} else {
+					messageHandleObject.MQue = []messageUnit{}
+				}
+
+				messageHandleObject.mu.Unlock()
 
 			}
 
-			messageHandleObject.mu.Unlock()
 		}
 
 		time.Sleep(100 * time.Millisecond)
-
 	}
-
 }
