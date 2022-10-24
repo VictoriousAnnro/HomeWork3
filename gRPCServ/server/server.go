@@ -75,6 +75,8 @@ func launchServer() {
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)
+	} else {
+		log.Printf("serveing")
 	}
 	// code here is unreachable because grpcServer.Serve occupies the current thread.
 }

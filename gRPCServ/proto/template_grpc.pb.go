@@ -99,5 +99,5 @@ var GetTime_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "template.proto",
+	Metadata: "proto/template.proto",
 }
