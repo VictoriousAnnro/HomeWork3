@@ -101,3 +101,91 @@ var GetTime_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/template.proto",
 }
+
+// SendMessageClient is the client API for SendMessage service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type SendMessageClient interface {
+	// one message is sent and one is recieved
+	SendMessage(ctx context.Context, in *Test, opts ...grpc.CallOption) (*Test, error)
+}
+
+type sendMessageClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewSendMessageClient(cc grpc.ClientConnInterface) SendMessageClient {
+	return &sendMessageClient{cc}
+}
+
+func (c *sendMessageClient) SendMessage(ctx context.Context, in *Test, opts ...grpc.CallOption) (*Test, error) {
+	out := new(Test)
+	err := c.cc.Invoke(ctx, "/proto.sendMessage/sendMessage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SendMessageServer is the server API for SendMessage service.
+// All implementations must embed UnimplementedSendMessageServer
+// for forward compatibility
+type SendMessageServer interface {
+	// one message is sent and one is recieved
+	SendMessage(context.Context, *Test) (*Test, error)
+	mustEmbedUnimplementedSendMessageServer()
+}
+
+// UnimplementedSendMessageServer must be embedded to have forward compatible implementations.
+type UnimplementedSendMessageServer struct {
+}
+
+func (UnimplementedSendMessageServer) SendMessage(context.Context, *Test) (*Test, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
+}
+func (UnimplementedSendMessageServer) mustEmbedUnimplementedSendMessageServer() {}
+
+// UnsafeSendMessageServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SendMessageServer will
+// result in compilation errors.
+type UnsafeSendMessageServer interface {
+	mustEmbedUnimplementedSendMessageServer()
+}
+
+func RegisterSendMessageServer(s grpc.ServiceRegistrar, srv SendMessageServer) {
+	s.RegisterService(&SendMessage_ServiceDesc, srv)
+}
+
+func _SendMessage_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Test)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SendMessageServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.sendMessage/sendMessage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SendMessageServer).SendMessage(ctx, req.(*Test))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SendMessage_ServiceDesc is the grpc.ServiceDesc for SendMessage service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var SendMessage_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.sendMessage",
+	HandlerType: (*SendMessageServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "sendMessage",
+			Handler:    _SendMessage_SendMessage_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/template.proto",
+}

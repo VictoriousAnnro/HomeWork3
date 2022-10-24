@@ -70,13 +70,11 @@ func launchServer() {
 	}
 
 	gRPC.RegisterGetTimeServer(grpcServer, server) //Registers the server to the gRPC server.
-
+	log.Print(grpcServer.GetServiceInfo())
 	log.Printf("Server %s: Listening on port %s\n", *serverName, *port)
 
 	if err := grpcServer.Serve(list); err != nil {
 		log.Fatalf("failed to serve %v", err)
-	} else {
-		log.Printf("serveing")
 	}
 	// code here is unreachable because grpcServer.Serve occupies the current thread.
 }

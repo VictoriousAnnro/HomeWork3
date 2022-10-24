@@ -28,3 +28,14 @@ message Request {
 message Ack {
     string timestring = 1;
 }
+
+message Test {
+    string messageString = 1;
+}
+
+service sendMessage
+{
+    //one message is sent and one is recieved
+    rpc sendMessage (Test) returns (Test);
+}
+
