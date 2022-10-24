@@ -1,6 +1,7 @@
 package main
 
 import (
+	Videobranch "grpcChatServer/chatserver"
 	"log"
 	"net"
 	"os"
@@ -23,8 +24,8 @@ func main() {
 
 	grpcserver := grpc.NewServer()
 
-	cs := chatserver.ChatServer{}
-	chatserver.RegisterServicesServer(grpcserver, &cs)
+	cs := Videobranch.ChatServer{}
+	Videobranch.RegisterServicesServer(grpcserver, &cs)
 
 	err = grpcserver.Serve(listen)
 	if err != nil {
