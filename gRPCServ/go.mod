@@ -1,4 +1,4 @@
-module github.com/VictoriousAnnro/HomeWork3/gRPCServ
+module github.com/VictoriousAnnro/HomeWork3/tree/EikMain2/gRPCServ
 
 go 1.19
 

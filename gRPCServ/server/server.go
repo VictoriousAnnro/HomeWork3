@@ -11,7 +11,7 @@ import (
 
 	// this has to be the same as the go.mod module,
 	// followed by the path to the folder the proto file is in.
-	gRPC "github.com/VictoriousAnnro/HomeWork3/gRPCServ/proto"
+	gRPC "github.com/VictoriousAnnro/HomeWork3/tree/EikMain2/gRPCServ/proto"
 
 	"google.golang.org/grpc"
 )
@@ -20,6 +20,15 @@ type Server struct {
 	gRPC.UnimplementedGetTimeServer        // You need this line if you have a server
 	name                            string // Not required but useful if you want to name your server
 	port                            string // Not required but useful if your server needs to know what port it's listening to
+
+	currentTime time.Time
+	mutex       sync.Mutex // used to lock the server to avoid race conditions.
+}
+
+type Server2 struct {
+	gRPC.UnimplementedSendMessageServer        // You need this line if you have a server
+	name                                string // Not required but useful if you want to name your server
+	port                                string // Not required but useful if your server needs to know what port it's listening to
 
 	currentTime time.Time
 	mutex       sync.Mutex // used to lock the server to avoid race conditions.
@@ -63,13 +72,13 @@ func launchServer() {
 	grpcServer := grpc.NewServer(opts...)
 
 	// makes a new server instance using the name and port from the flags.
-	server := &Server{
+	server := &Server2{
 		name: *serverName,
 		port: *port,
 		//incrementValue: 0, // gives default value, but not sure if it is necessary
 	}
 
-	gRPC.RegisterGetTimeServer(grpcServer, server) //Registers the server to the gRPC server.
+	gRPC.RegisterSendMessageServer(grpcServer, server) //Registers the server to the gRPC server.
 	log.Print(grpcServer.GetServiceInfo())
 	log.Printf("Server %s: Listening on port %s\n", *serverName, *port)
 
@@ -86,6 +95,17 @@ func (s *Server) GetTime(ctx context.Context, Request *gRPC.Request) (*gRPC.Ack,
 
 	//ack :=  // make an instance of your return type
 	return &gRPC.Ack{Timestring: s.currentTime.String()}, nil
+
+	//check NewValue i kode og ret. Should work?
+}
+
+func (s *Server) SendMessage(ctx context.Context, Request *gRPC.Test) (*gRPC.Test, error) {
+	s.currentTime = time.Now()
+	fmt.Println("Client Requested Time")
+	//timeString := s.currentTime.String()
+
+	//ack :=  // make an instance of your return type
+	return &gRPC.Test{MessageString: "Omg u so stupid haha"}, nil
 
 	//check NewValue i kode og ret. Should work?
 }

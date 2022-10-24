@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	gRPC "github.com/VictoriousAnnro/HomeWork3/gRPCServ/proto"
+	gRPC "github.com/VictoriousAnnro/HomeWork3/tree/EikMain2/gRPCServ/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,8 +26,8 @@ go run .\client\client.go
 var clientsName = flag.String("name", "default", "Senders name")
 var serverPort = flag.String("server", "5400", "Tcp server")
 
-var server gRPC.GetTimeClient   //the server
-var ServerConn *grpc.ClientConn //the server connection
+var server gRPC.sendMessageClient //the server
+var ServerConn *grpc.ClientConn   //the server connection
 
 func main() {
 	//parse flag/arguments
@@ -70,7 +70,7 @@ func ConnectToServer() {
 
 	// makes a client from the server connection and saves the connection
 	// and prints rather or not the connection was is READY
-	server = gRPC.NewGetTimeClient(conn)
+	server = gRPC.NewSendMessageClient(conn)
 	ServerConn = conn
 	log.Println("the connection is: ", conn.GetState().String())
 }
@@ -107,13 +107,13 @@ func parseInput() {
 
 func GetTheTime(val int64) {
 	//create amount type
-	request := &gRPC.Request{
-		ClientName: *clientsName,
-		Value:      val, //cast from int to int32
+
+	message := &gRPC.Test{
+		messageString: val,
 	}
 
 	//Make gRPC call to server with amount, and recieve acknowlegdement back.
-	ack, err := server.GetTime(context.Background(), request)
+	ack, err := server.SendMessage(context.Background(), message)
 	if err != nil {
 		log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 		log.Println(err)
