@@ -1,5 +1,6 @@
 package Videobranch
 
+//Credit: https://github.com/rrrCode9/gRPC-Bidirectional-Streaming-ChatServer/blob/main/client.go
 import (
 	"log"
 	"math/rand"

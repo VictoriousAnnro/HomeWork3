@@ -1,5 +1,6 @@
 package main
 
+//Credit: https://github.com/rrrCode9/gRPC-Bidirectional-Streaming-ChatServer/blob/main/client.go
 import (
 	Videobranch "grpcChatServer/chatserver"
 	"log"

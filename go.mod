@@ -1,5 +1,5 @@
 module grpcChatServer
-
+//Credit: https://github.com/rrrCode9/gRPC-Bidirectional-Streaming-ChatServer/blob/main/client.go
 go 1.19
 
 require (
