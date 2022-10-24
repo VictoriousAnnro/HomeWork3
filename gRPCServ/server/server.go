@@ -17,9 +17,9 @@ import (
 )
 
 type Server struct {
-	gRPC.UnimplementedGetTimeServer        // You need this line if you have a server
-	name                            string // Not required but useful if you want to name your server
-	port                            string // Not required but useful if your server needs to know what port it's listening to
+	gRPC.UnimplementedSendMessageServer        // You need this line if you have a server
+	name                                string // Not required but useful if you want to name your server
+	port                                string // Not required but useful if your server needs to know what port it's listening to
 
 	currentTime time.Time
 	mutex       sync.Mutex // used to lock the server to avoid race conditions.
@@ -72,7 +72,7 @@ func launchServer() {
 	grpcServer := grpc.NewServer(opts...)
 
 	// makes a new server instance using the name and port from the flags.
-	server := &Server2{
+	server := &Server{
 		name: *serverName,
 		port: *port,
 		//incrementValue: 0, // gives default value, but not sure if it is necessary
@@ -99,7 +99,7 @@ func (s *Server) GetTime(ctx context.Context, Request *gRPC.Request) (*gRPC.Ack,
 	//check NewValue i kode og ret. Should work?
 }
 
-func (s *Server) SendMessage(ctx context.Context, Request *gRPC.Test) (*gRPC.Test, error) {
+func (s *Server) SendMessage(ctx context.Context, Test *gRPC.Test) (*gRPC.Test, error) {
 	s.currentTime = time.Now()
 	fmt.Println("Client Requested Time")
 	//timeString := s.currentTime.String()

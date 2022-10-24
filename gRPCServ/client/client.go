@@ -104,15 +104,16 @@ func Message(val string) {
 	message := &gRPC.Test{
 		MessageString: val,
 	}
+	log.Println(message.MessageString)
 
 	//Make gRPC call to server with amount, and recieve acknowlegdement back.
-	Test, err := server.SendMessage(context.Background(), message)
+	Result, err := server.SendMessage(context.Background(), message)
 	if err != nil {
 		log.Printf("Client %s: no response from the server, attempting to reconnect", *clientsName)
 		log.Println(err)
 	}
 
-	fmt.Print("Success, the time is: ", Test.MessageString)
+	fmt.Print("Success, the time is: ", Result)
 }
 
 // Function which returns a true boolean if the connection to the server is ready, and false if it's not.

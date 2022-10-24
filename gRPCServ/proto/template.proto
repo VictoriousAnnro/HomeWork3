@@ -30,7 +30,8 @@ message Ack {
 }
 
 message Test {
-    string messageString = 1;
+    string clientName = 1;
+    string messageString = 2;
 }
 
 service sendMessage
