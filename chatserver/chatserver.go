@@ -21,6 +21,7 @@ type messageHandle struct {
 }
 
 var messageHandleObject = messageHandle{}
+var chatServiceHandler = []Services_ChatServiceServer{}
 
 type ChatServer struct {
 }
@@ -32,6 +33,7 @@ func (is *ChatServer) ChatService(csi Services_ChatServiceServer) error {
 
 	go recieveFromStream(csi, clientUniqueCode, errch)
 	go sendToStream(csi, clientUniqueCode, errch)
+	chatServiceHandler = append(chatServiceHandler, csi)
 
 	return <-errch
 
@@ -77,30 +79,29 @@ func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_
 				break
 			}
 
-			senderUniqueCode := messageHandleObject.MQue[0].ClientUniqueCode
 			senderName4Client := messageHandleObject.MQue[0].ClientName
 			message4Client := messageHandleObject.MQue[0].MessageBody
 
 			messageHandleObject.mu.Unlock()
-			if senderUniqueCode != clientUniqueCode_ {
 
-				err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
+			//err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
+			for i := 0; i < len(chatServiceHandler); i++ {
+				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client})
 
 				if err != nil {
 					errch_ <- err
 				}
-
-				messageHandleObject.mu.Lock()
-
-				if len(messageHandleObject.MQue) > 1 {
-					messageHandleObject.MQue = messageHandleObject.MQue[1:]
-				} else {
-					messageHandleObject.MQue = []messageUnit{}
-				}
-
-				messageHandleObject.mu.Unlock()
-
 			}
+
+			messageHandleObject.mu.Lock()
+
+			if len(messageHandleObject.MQue) > 1 {
+				messageHandleObject.MQue = messageHandleObject.MQue[1:]
+			} else {
+				messageHandleObject.MQue = []messageUnit{}
+			}
+
+			messageHandleObject.mu.Unlock()
 
 		}
 

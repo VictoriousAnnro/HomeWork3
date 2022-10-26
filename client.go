@@ -63,6 +63,11 @@ func (ch *clienthandle) clientConfig() {
 		log.Fatalf(" Failed to read from console :: %v", err)
 	}
 	ch.clientName = strings.Trim(name, "\r\n")
+	clientMessageBox := &Videobranch.FromClient{
+		Name: ch.clientName,
+		Body: "Have joined the channel!!!!",
+	}
+	ch.stream.Send(clientMessageBox)
 
 }
 
@@ -98,7 +103,6 @@ func (ch *clienthandle) receiveMessage() {
 		if err != nil {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
-		fmt.Println("1")
 		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
 
 	}
