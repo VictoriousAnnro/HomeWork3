@@ -37,6 +37,8 @@ func main() {
 
 }
 
+//Credit: https://github.com/PatrickMatthiesen/DSYS-gRPC-template/blob/master/server/server.go
+
 func setLog() *os.File {
 	// Clears the log.txt file when a new server is started
 	if err := os.Truncate("log.txt", 0); err != nil {
