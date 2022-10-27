@@ -15,13 +15,16 @@ import (
 
 func main() {
 
-	fmt.Println("Enter Server IP:PORT ::: ")
+	fmt.Println("--- Enter a Username to Join Chat ---")
+	fmt.Printf("Your Name : ")
 	reader := bufio.NewReader(os.Stdin)
-	serverID, err := reader.ReadString('\n')
+	input, err := reader.ReadString('\n')
 	if err != nil {
 		log.Printf("Failed to read from console :: %v", err)
 	}
-	serverID = strings.Trim(serverID, "\r\n")
+	clientNameInput := strings.Trim(input, "\r\n")
+
+	serverID := "localhost:5000" //strings.Trim(serverID, "\r\n")
 
 	log.Println("Connecting : " + serverID)
 
@@ -33,21 +36,18 @@ func main() {
 	defer conn.Close()
 
 	client := Videobranch.NewServicesClient(conn)
-
 	stream, err := client.ChatService(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to call ChatService :: %v", err)
-
 	}
 
 	ch := clienthandle{stream: stream}
-	ch.clientConfig()
+	ch.joinChat(clientNameInput)
 	go ch.sendMessage()
 	go ch.receiveMessage()
 
 	bl := make(chan bool)
 	<-bl
-
 }
 
 type clienthandle struct {
@@ -55,17 +55,11 @@ type clienthandle struct {
 	clientName string
 }
 
-func (ch *clienthandle) clientConfig() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("Your Name : ")
-	name, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatalf(" Failed to read from console :: %v", err)
-	}
-	ch.clientName = strings.Trim(name, "\r\n")
+func (ch *clienthandle) joinChat(clientNameInput string) {
+	ch.clientName = clientNameInput
 	clientMessageBox := &Videobranch.FromClient{
 		Name: ch.clientName,
-		Body: "Have joined the channel!!!!",
+		Body: "May I join?? uwu", //"Has joined the channel!!"
 	}
 	ch.stream.Send(clientMessageBox)
 
@@ -101,7 +95,7 @@ func (ch *clienthandle) receiveMessage() {
 	for {
 		mssg, err := ch.stream.Recv()
 		if err != nil {
-			log.Printf("Error in reciving message from server :: %v", err)
+			log.Printf("Error in reciving message from server :: %v", err, ch.clientName)
 		}
 		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
 
