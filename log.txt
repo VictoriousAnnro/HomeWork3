@@ -1,3 +1,21 @@
-2022/10/27 11:15:58 Listening @ : 5000
-2022/10/27 11:16:12 {eiku Have joined the channel!!!! 19727887 498081}
-2022/10/27 11:16:20 {eiku hello 27131847 498081}
+2022/10/27 11:32:35 Listening @ : 5000
+2022/10/27 11:32:44 A new client has joined the chat
+2022/10/27 11:32:46 owo Has sent a message
+2022/10/27 11:32:46 {owo Have joined the channel!!!! 19727887 498081}
+2022/10/27 11:32:46 Server distributed a message from: owo
+2022/10/27 11:32:54 A new client has joined the chat
+2022/10/27 11:32:57 uwu Has sent a message
+2022/10/27 11:32:57 {uwu Have joined the channel!!!! 39984059 131847}
+2022/10/27 11:32:57 Server distributed a message from: uwu
+2022/10/27 11:32:57 Server distributed a message from: uwu
+2022/10/27 11:33:06 A new client has joined the chat
+2022/10/27 11:33:08 umu Has sent a message
+2022/10/27 11:33:08 {umu Have joined the channel!!!! 74941318 902081}
+2022/10/27 11:33:08 Server distributed a message from: umu
+2022/10/27 11:33:08 Server distributed a message from: umu
+2022/10/27 11:33:08 Server distributed a message from: umu
+2022/10/27 11:33:10 umu Has sent a message
+2022/10/27 11:33:10 {umu umu 40954425 902081}
+2022/10/27 11:33:11 Server distributed a message from: umu
+2022/10/27 11:33:11 Server distributed a message from: umu
+2022/10/27 11:33:11 Server distributed a message from: umu
