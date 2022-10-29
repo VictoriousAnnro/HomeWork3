@@ -96,8 +96,10 @@ func (ch *clienthandle) receiveMessage() {
 		mssg, err := ch.stream.Recv()
 		if err != nil {
 			log.Printf("Error in reciving message from server :: %v", err, ch.clientName)
+			//return
 		}
-		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
+
+		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body) //3 clients - 1 leaves, get nil pointer reference
 
 	}
 

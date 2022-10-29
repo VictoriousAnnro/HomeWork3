@@ -3,6 +3,7 @@ package Videobranch
 //Credit: https://github.com/rrrCode9/gRPC-Bidirectional-Streaming-ChatServer/blob/main/client.go
 import (
 	"log"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -21,46 +22,65 @@ type messageHandle struct {
 }
 
 type chatserviceHandle struct {
-	ClientMap map[string]Services_ChatServiceServer
+	//ClientMap map[string]Services_ChatServiceServer
+	ClientMap map[int]clienthandle
 	lo        sync.Mutex
 }
 
+type clienthandle struct {
+	clientStream Services_ChatServiceServer
+	cName        string
+	id           int //need this tho?? check
+}
+
 var messageHandleObject = messageHandle{}
-var chatserviceHandleObject = chatserviceHandle{ClientMap: make(map[string]Services_ChatServiceServer)}
+var chatserviceHandleObject = chatserviceHandle{ClientMap: make(map[int]clienthandle)}
 
 type ChatServer struct {
-	cName string
+	//cName string
 }
 
 func (is *ChatServer) ChatService(csi Services_ChatServiceServer) error {
 
-	//clientUniqueCode := rand.Intn(1e6)
+	clientUniqueCode := rand.Intn(1e6)
 	errch := make(chan error)
 
-	go recieveFromStream(csi, is, errch)
+	go recieveFromStream(csi, clientUniqueCode, errch)
 	go sendToStream(errch) //make global somehow?
 
 	return <-errch
 
 }
 
-func recieveFromStream(csi_ Services_ChatServiceServer, is *ChatServer, errch_ chan error) {
+func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, errch_ chan error) {
 
 	for {
 		mssg, err := csi_.Recv()
+
+		if status.Code(err) == codes.Canceled {
+			removeClient(clientUniqueCode)
+			break
+		}
+
 		if err != nil {
 			log.Printf("Error in reciving message from client :: %v", err)
-			if status.Code(err) == codes.Canceled { //does the code say the context has been cancelled, aka client disconnected?
+			/*if status.Code(err) == codes.Canceled { //does the code say the context has been cancelled, aka client disconnected?
 				removeClient(is)
-			}
+				break
+			}*/
 			errch_ <- err
 		} else {
 			//tjek om join request
 			if mssg.Body == "May I join?? uwu" {
-				is.cName = mssg.Name
+
+				client := clienthandle{
+					clientStream: csi_,
+					cName:        mssg.Name,
+					id:           clientUniqueCode,
+				}
 
 				chatserviceHandleObject.lo.Lock()
-				chatserviceHandleObject.ClientMap[mssg.Name] = csi_
+				chatserviceHandleObject.ClientMap[clientUniqueCode] = client
 				chatserviceHandleObject.lo.Unlock()
 				mssg.Body = "Has joined the channel!"
 			}
@@ -82,16 +102,18 @@ func recieveFromStream(csi_ Services_ChatServiceServer, is *ChatServer, errch_ c
 
 }
 
-func removeClient(is *ChatServer) {
+func removeClient(clientUniqueCode int) {
+	name := chatserviceHandleObject.ClientMap[clientUniqueCode].cName
 
 	chatserviceHandleObject.lo.Lock()
-	delete(chatserviceHandleObject.ClientMap, is.cName) //remove client from list
+	delete(chatserviceHandleObject.ClientMap, clientUniqueCode) //remove client from list
+	log.Printf("removing client: %v", name)
 	chatserviceHandleObject.lo.Unlock()
 
 	messageHandleObject.mu.Lock()
 
 	messageHandleObject.MQue = append(messageHandleObject.MQue, messageUnit{
-		ClientName:  is.cName,
+		ClientName:  name,
 		MessageBody: "Has left the chat",
 	})
 	//prints this message 2 times for some reason??
@@ -120,9 +142,12 @@ func sendToStream(errch_ chan error) {
 
 			messageHandleObject.mu.Unlock()
 
-			for _, stream := range chatserviceHandleObject.ClientMap {
+			//log.Printf("Sending to %v clients:", len(chatserviceHandleObject.ClientMap))
+			for _, clientH := range chatserviceHandleObject.ClientMap {
+				//log.Printf("client: %v", clientN)
+				err := clientH.clientStream.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 
-				err := stream.Send(&FromServer{Name: senderName4Client, Body: message4Client})
+				//err := stream.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 
 				if err != nil {
 					errch_ <- err
