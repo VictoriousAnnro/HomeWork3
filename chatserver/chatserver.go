@@ -14,6 +14,7 @@ type messageUnit struct {
 	MessageBody       string
 	MessageUniqueCode int
 	ClientUniqueCode  int
+	Lamport           int32
 }
 
 type messageHandle struct {
@@ -23,7 +24,6 @@ type messageHandle struct {
 
 var messageHandleObject = messageHandle{}
 var chatServiceHandler = []Services_ChatServiceServer{}
-var Lamport = 0
 
 type ChatServer struct {
 }
@@ -55,18 +55,13 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, e
 			messageHandleObject.MQue = append(messageHandleObject.MQue, messageUnit{
 				ClientName:        mssg.Name,
 				MessageBody:       mssg.Body,
+				Lamport:           mssg.Lamport,
 				MessageUniqueCode: rand.Intn(1e8),
 				ClientUniqueCode:  clientUniqueCode_,
 			})
 
-			if mssg.Lamport > int32(Lamport) {
-				Lamport = int(mssg.Lamport) + 1
-			} else {
-				Lamport = Lamport + 1
-			}
-
 			messageHandleObject.mu.Unlock()
-			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], "LAMPORT: ", Lamport))
+			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " LAMPORT: ", mssg.Lamport))
 		}
 
 	}
@@ -89,13 +84,13 @@ func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_
 
 			senderName4Client := messageHandleObject.MQue[0].ClientName
 			message4Client := messageHandleObject.MQue[0].MessageBody
-			Lamport = Lamport + 1
+			lamport4Client := messageHandleObject.MQue[0].Lamport
 
 			messageHandleObject.mu.Unlock()
 
 			//err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 			for i := 0; i < len(chatServiceHandler); i++ {
-				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: int32(Lamport)})
+				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: lamport4Client})
 
 				if err != nil {
 					errch_ <- err
