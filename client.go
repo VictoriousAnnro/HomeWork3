@@ -109,7 +109,8 @@ func (ch *clienthandle) receiveMessage() {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
 
-		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body, mssg.Lamport)
+		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
+		fmt.Printf("%v", mssg.Lamport)
 
 		if mssg.Lamport > int32(ch.lamport) {
 			ch.lamport = int(mssg.Lamport) + 1
