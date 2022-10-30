@@ -2,6 +2,7 @@ package Videolamportbranch
 
 //Credit: https://github.com/rrrCode9/gRPC-Bidirectional-Streaming-ChatServer/blob/main/client.go
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"sync"
@@ -22,6 +23,7 @@ type messageHandle struct {
 
 var messageHandleObject = messageHandle{}
 var chatServiceHandler = []Services_ChatServiceServer{}
+var Lamport = 0
 
 type ChatServer struct {
 }
@@ -57,8 +59,14 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, e
 				ClientUniqueCode:  clientUniqueCode_,
 			})
 
+			if mssg.Lamport > int32(Lamport) {
+				Lamport = int(mssg.Lamport) + 1
+			} else {
+				Lamport = Lamport + 1
+			}
+
 			messageHandleObject.mu.Unlock()
-			log.Printf("%v", messageHandleObject.MQue[len(messageHandleObject.MQue)-1])
+			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], "LAMPORT: ", Lamport))
 		}
 
 	}
@@ -81,12 +89,13 @@ func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_
 
 			senderName4Client := messageHandleObject.MQue[0].ClientName
 			message4Client := messageHandleObject.MQue[0].MessageBody
+			Lamport = Lamport + 1
 
 			messageHandleObject.mu.Unlock()
 
 			//err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 			for i := 0; i < len(chatServiceHandler); i++ {
-				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client})
+				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: int32(Lamport)})
 
 				if err != nil {
 					errch_ <- err

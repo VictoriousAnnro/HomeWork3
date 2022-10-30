@@ -53,6 +53,7 @@ func main() {
 type clienthandle struct {
 	stream     Videobranch.Services_ChatServiceClient
 	clientName string
+	lamport    int
 }
 
 func (ch *clienthandle) clientConfig() {
@@ -63,9 +64,11 @@ func (ch *clienthandle) clientConfig() {
 		log.Fatalf(" Failed to read from console :: %v", err)
 	}
 	ch.clientName = strings.Trim(name, "\r\n")
+	ch.lamport = ch.lamport + 1
 	clientMessageBox := &Videobranch.FromClient{
-		Name: ch.clientName,
-		Body: "Have joined the channel!!!!",
+		Name:    ch.clientName,
+		Body:    "Have joined the channel!!!!",
+		Lamport: int32(ch.lamport),
 	}
 	ch.stream.Send(clientMessageBox)
 
@@ -80,10 +83,12 @@ func (ch *clienthandle) sendMessage() {
 			log.Fatalf(" Failed to read from console :: %v", err)
 		}
 		clientMessage = strings.Trim(clientMessage, "\r\n")
+		ch.lamport = ch.lamport + 1
 
 		clientMessageBox := &Videobranch.FromClient{
-			Name: ch.clientName,
-			Body: clientMessage,
+			Name:    ch.clientName,
+			Body:    clientMessage,
+			Lamport: int32(ch.lamport),
 		}
 
 		err = ch.stream.Send(clientMessageBox)
@@ -103,7 +108,14 @@ func (ch *clienthandle) receiveMessage() {
 		if err != nil {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
-		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
+
+		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body, mssg.Lamport)
+
+		if mssg.Lamport > int32(ch.lamport) {
+			ch.lamport = int(mssg.Lamport) + 1
+		} else {
+			ch.lamport = ch.lamport + 1
+		}
 
 	}
 
