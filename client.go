@@ -83,7 +83,7 @@ func (ch *clienthandle) sendMessage() {
 			log.Fatalf(" Failed to read from console :: %v", err)
 		}
 		clientMessage = strings.Trim(clientMessage, "\r\n")
-
+		ch.lamport++
 		clientMessageBox := &Videobranch.FromClient{
 			Name:    ch.clientName,
 			Body:    clientMessage,
@@ -108,8 +108,9 @@ func (ch *clienthandle) receiveMessage() {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
 		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
-
-		if mssg.Lamport > ch.lamport {
+		if mssg.Name == ch.clientName {
+			//do nothing as this is just the message it just sent
+		} else if mssg.Lamport > ch.lamport {
 			ch.lamport = mssg.Lamport
 			ch.lamport++
 		} else {
