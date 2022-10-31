@@ -61,7 +61,7 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, e
 			})
 
 			messageHandleObject.mu.Unlock()
-			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " LAMPORT: ", mssg.Lamport))
+			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Sending Lamport Value: ", mssg.Lamport))
 		}
 
 	}

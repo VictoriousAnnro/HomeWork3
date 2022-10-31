@@ -83,7 +83,6 @@ func (ch *clienthandle) sendMessage() {
 			log.Fatalf(" Failed to read from console :: %v", err)
 		}
 		clientMessage = strings.Trim(clientMessage, "\r\n")
-		ch.lamport++
 
 		clientMessageBox := &Videobranch.FromClient{
 			Name:    ch.clientName,
@@ -109,7 +108,6 @@ func (ch *clienthandle) receiveMessage() {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
 		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
-		fmt.Printf("%v", mssg.Lamport)
 
 		if mssg.Lamport > ch.lamport {
 			ch.lamport = mssg.Lamport
@@ -117,6 +115,10 @@ func (ch *clienthandle) receiveMessage() {
 		} else {
 			ch.lamport++
 		}
+		fmt.Print("Current Local Lamport Timestamp: ")
+		fmt.Printf("%v", ch.lamport)
+		fmt.Println()
+		fmt.Println()
 
 	}
 
