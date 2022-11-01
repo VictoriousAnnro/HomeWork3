@@ -108,16 +108,14 @@ func (ch *clienthandle) receiveMessage() {
 			log.Printf("Error in reciving message from server :: %v", err)
 		}
 		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
-		if mssg.Name == ch.clientName {
-			//do nothing as this is just the message it just sent
-		} else if mssg.Lamport > ch.lamport {
+		if mssg.Lamport > ch.lamport {
 			ch.lamport = mssg.Lamport
 			ch.lamport++
 		} else {
 			ch.lamport++
 		}
-		fmt.Print("Current Local Lamport Timestamp: ")
-		fmt.Printf("%v", ch.lamport)
+		fmt.Print("( Current Local Lamport Timestamp: ")
+		fmt.Printf("%v %s", ch.lamport, ")")
 		fmt.Println()
 		fmt.Println()
 

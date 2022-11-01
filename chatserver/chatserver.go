@@ -61,7 +61,8 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, e
 			})
 
 			messageHandleObject.mu.Unlock()
-			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Sending Lamport Value: ", mssg.Lamport))
+			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Reacived Lamport Value: ", mssg.Lamport))
+
 		}
 
 	}
@@ -90,7 +91,8 @@ func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_
 
 			//err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 			for i := 0; i < len(chatServiceHandler); i++ {
-				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: lamport4Client})
+				log.Printf("%v", fmt.Sprint("Server Sending the Message along with Lamport Value: '", lamport4Client+1, "' to client nr. ", i+1))
+				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: lamport4Client + 1})
 
 				if err != nil {
 					errch_ <- err
