@@ -33,6 +33,7 @@ type clienthandle struct {
 	clientStream Services_ChatServiceServer
 	cName        string
 	id           int //need this tho?? check
+	lamport      int32
 }
 
 var messageHandleObject = messageHandle{}
@@ -79,6 +80,7 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, er
 					clientStream: csi_,
 					cName:        mssg.Name,
 					id:           clientUniqueCode,
+					lamport:      mssg.Lamport,
 				}
 
 				chatserviceHandleObject.lo.Lock()
@@ -107,6 +109,7 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, er
 
 func removeClient(clientUniqueCode int) {
 	name := chatserviceHandleObject.ClientMap[clientUniqueCode].cName
+	lamport := chatserviceHandleObject.ClientMap[clientUniqueCode].lamport
 
 	chatserviceHandleObject.lo.Lock()
 	delete(chatserviceHandleObject.ClientMap, clientUniqueCode) //remove client from list
@@ -118,6 +121,7 @@ func removeClient(clientUniqueCode int) {
 	messageHandleObject.MQue = append(messageHandleObject.MQue, messageUnit{
 		ClientName:  name,
 		MessageBody: "Has left the chat",
+		Lamport:     lamport,
 	})
 	//prints this message 2 times for some reason??
 
