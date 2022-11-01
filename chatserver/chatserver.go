@@ -97,7 +97,7 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, er
 			})
 
 			messageHandleObject.mu.Unlock()
-			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Reacived Lamport Value: ", mssg.Lamport))
+			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Server reacived Lamport Value: ", mssg.Lamport))
 
 		}
 
