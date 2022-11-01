@@ -48,7 +48,7 @@ func (is *ChatServer) ChatService(csi Services_ChatServiceServer) error {
 	errch := make(chan error)
 
 	go recieveFromStream(csi, clientUniqueCode, errch)
-	go sendToStream(errch) //make global somehow?
+	go sendToStream(errch)
 
 	return <-errch
 
