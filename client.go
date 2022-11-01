@@ -24,7 +24,7 @@ func main() {
 	}
 	clientNameInput := strings.Trim(input, "\r\n")
 
-	serverID := "localhost:5000" //strings.Trim(serverID, "\r\n")
+	serverID := "localhost:5000"
 
 	log.Println("Connecting : " + serverID)
 
@@ -61,7 +61,7 @@ func (ch *clienthandle) joinChat(clientNameInput string) {
 	ch.lamport = 1
 	clientMessageBox := &Videobranch.FromClient{
 		Name:    ch.clientName,
-		Body:    "May I join?? uwu", //"Has joined the channel!!"
+		Body:    "May I join?? uwu",
 		Lamport: ch.lamport,
 	}
 	ch.stream.Send(clientMessageBox)
@@ -100,7 +100,6 @@ func (ch *clienthandle) receiveMessage() {
 		mssg, err := ch.stream.Recv()
 		if err != nil {
 			log.Printf("Error in reciving message from server :: %v", err, ch.clientName)
-			//return
 		}
 		fmt.Printf("%s : %s \n", mssg.Name, mssg.Body)
 		if mssg.Lamport > ch.lamport {

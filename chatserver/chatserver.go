@@ -24,7 +24,6 @@ type messageHandle struct {
 }
 
 type chatserviceHandle struct {
-	//ClientMap map[string]Services_ChatServiceServer
 	ClientMap map[int]clienthandle
 	lo        sync.Mutex
 }
@@ -32,14 +31,13 @@ type chatserviceHandle struct {
 type clienthandle struct {
 	clientStream Services_ChatServiceServer
 	cName        string
-	id           int //need this tho?? check
+	id           int
 }
 
 var messageHandleObject = messageHandle{}
 var chatserviceHandleObject = chatserviceHandle{ClientMap: make(map[int]clienthandle)}
 
 type ChatServer struct {
-	//cName string
 }
 
 func (is *ChatServer) ChatService(csi Services_ChatServiceServer) error {
@@ -66,10 +64,6 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, er
 
 		if err != nil {
 			log.Printf("Error in reciving message from client :: %v", err)
-			/*if status.Code(err) == codes.Canceled { //does the code say the context has been cancelled, aka client disconnected?
-				removeClient(is)
-				break
-			}*/
 			errch_ <- err
 		} else {
 			//tjek om join request
@@ -87,7 +81,6 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, er
 				mssg.Body = "Has joined the channel!"
 			}
 
-			//make this into sep. method, to avoid duplicate code in removeClient()? - later
 			messageHandleObject.mu.Lock()
 
 			messageHandleObject.MQue = append(messageHandleObject.MQue, messageUnit{
@@ -97,7 +90,7 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, er
 			})
 
 			messageHandleObject.mu.Unlock()
-			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Server reacived Lamport Value: ", mssg.Lamport))
+			log.Printf("%v", fmt.Sprint(messageHandleObject.MQue[len(messageHandleObject.MQue)-1], " Server received Lamport Value: ", mssg.Lamport))
 
 		}
 
@@ -119,7 +112,6 @@ func removeClient(clientUniqueCode int) {
 		ClientName:  name,
 		MessageBody: "Has left the chat",
 	})
-	//prints this message 2 times for some reason??
 
 	messageHandleObject.mu.Unlock()
 	log.Printf("%v", messageHandleObject.MQue[len(messageHandleObject.MQue)-1])
@@ -146,13 +138,9 @@ func sendToStream(errch_ chan error) {
 
 			messageHandleObject.mu.Unlock()
 
-			//log.Printf("Sending to %v clients:", len(chatserviceHandleObject.ClientMap))
 			for _, clientH := range chatserviceHandleObject.ClientMap {
-				//log.Printf("client: %v", clientN)
 				log.Printf("%v", fmt.Sprint("Server Sending the Message along with Lamport Value: '", lamport4Client+1, "' to client: ", clientH.cName))
 				err := clientH.clientStream.Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: lamport4Client + 1})
-
-				//err := stream.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 
 				if err != nil {
 					errch_ <- err
