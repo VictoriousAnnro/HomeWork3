@@ -7,14 +7,15 @@ import (
 	"math/rand"
 	"sync"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type messageUnit struct {
-	ClientName        string
-	MessageBody       string
-	MessageUniqueCode int
-	ClientUniqueCode  int
-	Lamport           int32
+	ClientName  string
+	MessageBody string
+	Lamport     int32
 }
 
 type messageHandle struct {
@@ -22,10 +23,23 @@ type messageHandle struct {
 	mu   sync.Mutex
 }
 
+type chatserviceHandle struct {
+	//ClientMap map[string]Services_ChatServiceServer
+	ClientMap map[int]clienthandle
+	lo        sync.Mutex
+}
+
+type clienthandle struct {
+	clientStream Services_ChatServiceServer
+	cName        string
+	id           int //need this tho?? check
+}
+
 var messageHandleObject = messageHandle{}
-var chatServiceHandler = []Services_ChatServiceServer{}
+var chatserviceHandleObject = chatserviceHandle{ClientMap: make(map[int]clienthandle)}
 
 type ChatServer struct {
+	//cName string
 }
 
 func (is *ChatServer) ChatService(csi Services_ChatServiceServer) error {
@@ -34,30 +48,52 @@ func (is *ChatServer) ChatService(csi Services_ChatServiceServer) error {
 	errch := make(chan error)
 
 	go recieveFromStream(csi, clientUniqueCode, errch)
-	go sendToStream(csi, clientUniqueCode, errch)
-	chatServiceHandler = append(chatServiceHandler, csi)
+	go sendToStream(errch) //make global somehow?
 
 	return <-errch
 
 }
 
-func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_ chan error) {
+func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode int, errch_ chan error) {
 
 	for {
 		mssg, err := csi_.Recv()
+
+		if status.Code(err) == codes.Canceled {
+			removeClient(clientUniqueCode)
+			break
+		}
+
 		if err != nil {
 			log.Printf("Error in reciving message from client :: %v", err)
+			/*if status.Code(err) == codes.Canceled { //does the code say the context has been cancelled, aka client disconnected?
+				removeClient(is)
+				break
+			}*/
 			errch_ <- err
 		} else {
+			//tjek om join request
+			if mssg.Body == "May I join?? uwu" {
 
+				client := clienthandle{
+					clientStream: csi_,
+					cName:        mssg.Name,
+					id:           clientUniqueCode,
+				}
+
+				chatserviceHandleObject.lo.Lock()
+				chatserviceHandleObject.ClientMap[clientUniqueCode] = client
+				chatserviceHandleObject.lo.Unlock()
+				mssg.Body = "Has joined the channel!"
+			}
+
+			//make this into sep. method, to avoid duplicate code in removeClient()? - later
 			messageHandleObject.mu.Lock()
 
 			messageHandleObject.MQue = append(messageHandleObject.MQue, messageUnit{
-				ClientName:        mssg.Name,
-				MessageBody:       mssg.Body,
-				Lamport:           mssg.Lamport,
-				MessageUniqueCode: rand.Intn(1e8),
-				ClientUniqueCode:  clientUniqueCode_,
+				ClientName:  mssg.Name,
+				MessageBody: mssg.Body,
+				Lamport:     mssg.Lamport,
 			})
 
 			messageHandleObject.mu.Unlock()
@@ -69,7 +105,28 @@ func recieveFromStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, e
 
 }
 
-func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_ chan error) {
+func removeClient(clientUniqueCode int) {
+	name := chatserviceHandleObject.ClientMap[clientUniqueCode].cName
+
+	chatserviceHandleObject.lo.Lock()
+	delete(chatserviceHandleObject.ClientMap, clientUniqueCode) //remove client from list
+	log.Printf("removing client: %v", name)
+	chatserviceHandleObject.lo.Unlock()
+
+	messageHandleObject.mu.Lock()
+
+	messageHandleObject.MQue = append(messageHandleObject.MQue, messageUnit{
+		ClientName:  name,
+		MessageBody: "Has left the chat",
+	})
+	//prints this message 2 times for some reason??
+
+	messageHandleObject.mu.Unlock()
+	log.Printf("%v", messageHandleObject.MQue[len(messageHandleObject.MQue)-1])
+
+}
+
+func sendToStream(errch_ chan error) {
 
 	for {
 		for {
@@ -89,10 +146,13 @@ func sendToStream(csi_ Services_ChatServiceServer, clientUniqueCode_ int, errch_
 
 			messageHandleObject.mu.Unlock()
 
-			//err := csi_.Send(&FromServer{Name: senderName4Client, Body: message4Client})
-			for i := 0; i < len(chatServiceHandler); i++ {
-				log.Printf("%v", fmt.Sprint("Server Sending the Message along with Lamport Value: '", lamport4Client+1, "' to client nr. ", i+1))
-				err := chatServiceHandler[i].Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: lamport4Client + 1})
+			//log.Printf("Sending to %v clients:", len(chatserviceHandleObject.ClientMap))
+			for _, clientH := range chatserviceHandleObject.ClientMap {
+				//log.Printf("client: %v", clientN)
+				log.Printf("%v", fmt.Sprint("Server Sending the Message along with Lamport Value: '", lamport4Client+1, "' to client: ", clientH.cName))
+				err := clientH.clientStream.Send(&FromServer{Name: senderName4Client, Body: message4Client, Lamport: lamport4Client + 1})
+
+				//err := stream.Send(&FromServer{Name: senderName4Client, Body: message4Client})
 
 				if err != nil {
 					errch_ <- err
