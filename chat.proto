@@ -1,0 +1,22 @@
+syntax = "proto3";
+package chatserver;
+
+option go_package = "github.com/VictoriousAnnro/HomeWork3/tree/Videolamportbranch";
+
+message FromClient{
+
+    string name = 1;
+    string body = 2;
+    int32 lamport = 3;
+}
+
+message FromServer{
+
+    string name = 1;
+    string body = 2;
+    int32 lamport = 3;
+}
+
+service Services{
+    rpc ChatService(stream FromClient) returns (stream FromServer){};
+}
